@@ -1,0 +1,15 @@
+{
+  "name": "node-express",
+  "version": "1.0.0",
+  "description": "Creating a web server using express ang serving static html files",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index"
+  },
+  "author": "Divyanshu singh",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
