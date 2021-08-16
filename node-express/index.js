@@ -16,9 +16,13 @@ const app = express();
 
 // Require our routers
 const dishRouter = require('./route/dishRouter');
+const leaderRouter = require('./route/leaderRouter');
+const promoRouter = require('./route/promoRouter');
 
 // Use our routers
 app.use('/dishes', dishRouter);
+app.use('/leaders', leaderRouter);
+app.use('/promotions', promoRouter);
 
 // This allows us to parse the body of the request message
 app.use(bodyParser.json()); 
