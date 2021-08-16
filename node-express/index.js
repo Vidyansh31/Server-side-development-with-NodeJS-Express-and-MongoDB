@@ -1,22 +1,33 @@
+// Require needed modules
 const express = require('express');
 const http = require('http');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 
+
+ 
+
+// Set host and port for server
 const hostname = 'localhost';
 const port = 3000;
 
-const app = express();  // here we are saying that our application are going to use express node module
+// here we are saying that our application are going to use express node module
+const app = express();
 
+// Require our routers
 const dishRouter = require('./route/dishRouter');
 
+// Use our routers
 app.use('/dishes', dishRouter);
 
-app.use(bodyParser.json());  // This allows us to parse the body of the request message
+// This allows us to parse the body of the request message
+app.use(bodyParser.json()); 
 
-app.use(morgan('dev')); //it will print out additional information to the screen as required
+//it will print out additional information to the screen as required
+app.use(morgan('dev')); 
 
-app.use(express.static(__dirname + '/public')); // This will serve the static files
+// This will serve the static files
+app.use(express.static(__dirname + '/public')); 
 
 
 app.use((req, res, next) => {
