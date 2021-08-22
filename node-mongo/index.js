@@ -1,6 +1,9 @@
 const MongoClient = require('mongodb').MongoClient;
 const assert = require('assert');
 
+// Requiring Operator.js
+const dboper = require('./operators');
+
 const url = "mongodb://localhost:27017/";
 const dbname = 'Data1';
 
@@ -15,32 +18,31 @@ MongoClient.connect(url,(err,client) => {
     // To connect to the database
     const db = client.db(dbname); 
 
-    const collection = db.collection('dishes'); 
+    dboper.insertDocument(db,{name: 'Burger' , description: 'Test'},'dishes',(result) => {
 
-    collection.insertOne({"name": "Uttapizza","description":"test"},(err,result) =>{
-        assert.equal(err,null);
+        console.log('Inserted document:\n ', result.ops);
 
-        console.log('After insert:\n');
-        console.log(result.ops);
-        // we get the result value that is returned there, This result will also provide this OPS property which says how many operations have just been carried out successfully
+        dboper.findDocument(db,'dishes',(docs)=>{
+            console.log('Found document:\n',docs);
 
+            dboper.updateDocument(db,{name:"Burger"},{description:"Updated Test"},'dishes',(result)=>{
+                console.log('Updated document:\n ', result.result);
 
-        collection.find().toArray((err,docs) => {
-            assert.equal(err,null);
+                dboper.findDocument(db,'dishes',(docs)=>{
 
-            console.log('Found \n');
-            // this will return all the documents present in Dishes
-            console.log(docs);
+                    console.log('Found Document:\n ', docs);
 
-            // Dropcollection method is used to remove the dishes collection from the database
-            db.dropCollection('dishes',(err,result) =>{
-                assert.equal(err,null);
+                    db.dropCollection('dishes',result => {
+                       console.log('Dropped Document:\n ', result);
+                        client.close();
+                    });
 
-                client.close();
+                    
+                })
             });
         });
-
     });
-
+    
+     
 
 });
