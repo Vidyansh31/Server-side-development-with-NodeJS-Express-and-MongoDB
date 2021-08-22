@@ -8,41 +8,41 @@ const url = "mongodb://localhost:27017/";
 const dbname = 'Data1';
 
 // The Connect method allows us to connect to the mongodb server 
-MongoClient.connect(url,(err,client) => {
+MongoClient.connect(url).then((client) => {
 
-    // The assert function help us to check that error is equal to null, if err is not equal to null then there is Some error
-    assert.equal(err,null); 
+    console.log('Connected correctly to server');
+    const db = client.db(dbname);
 
-    console.log('Connecting correctly to server');
-    
-    // To connect to the database
-    const db = client.db(dbname); 
+    dboper.insertDocument(db, { name: "Vadonut", description: "Test"},
+        "dishes")
+        .then((result) => {
+            console.log("Insert Document:\n", result.ops);
 
-    dboper.insertDocument(db,{name: 'Burger' , description: 'Test'},'dishes',(result) => {
+            return dboper.findDocuments(db, "dishes");
+        })
+        .then((docs) => {
+            console.log("Found Documents:\n", docs);
 
-        console.log('Inserted document:\n ', result.ops);
+            return dboper.updateDocument(db, { name: "Vadonut" },
+                    { description: "Updated Test" }, "dishes");
 
-        dboper.findDocument(db,'dishes',(docs)=>{
-            console.log('Found document:\n',docs);
+        })
+        .then((result) => {
+            console.log("Updated Document:\n", result.result);
 
-            dboper.updateDocument(db,{name:"Burger"},{description:"Updated Test"},'dishes',(result)=>{
-                console.log('Updated document:\n ', result.result);
+            return dboper.findDocuments(db, "dishes");
+        })
+        .then((docs) => {
+            console.log("Found Updated Documents:\n", docs);
+                            
+            return db.dropCollection("dishes");
+        })
+        .then((result) => {
+            console.log("Dropped Collection: ", result);
 
-                dboper.findDocument(db,'dishes',(docs)=>{
+            return client.close();
+        })
+        .catch((err) => console.log(err));
 
-                    console.log('Found Document:\n ', docs);
-
-                    db.dropCollection('dishes',result => {
-                       console.log('Dropped Document:\n ', result);
-                        client.close();
-                    });
-
-                    
-                })
-            });
-        });
-    });
-    
-     
-
-});
+})
+.catch((err) => console.log(err));
