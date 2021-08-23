@@ -1,5 +1,8 @@
 var express = require('express');
 var bodyParser = require('body-parser');
+const mongoose = require('mongoose');
+
+const leaders = require('../models/leader');
 
 var leaderRouter = express.Router({ mergeParams: true });
 
@@ -7,45 +10,76 @@ leaderRouter.use(bodyParser.json());
 
 //Routes for specific leader
 leaderRouter.route('/:leaderId')
-    .all((req, res, next) => {
-        res.statuscode = 200;
-        res.setHeader('Content-Type', 'text/html');
-        next();
-    })
     .get((req, res, next) => {
-        res.end("Will get the leader: " + req.params.leaderId + " to you!");
+        leaders.findById(req.params.leaderId)
+            .then((leader) => {
+                res.statuscode = 200;
+                res.setHeader('Content-Type', 'application/json');
+                res.json(leader);
+            }, (err) => next(err))
+            .catch((err) => next(err));
     })
     .post((req, res, next) => {
         res.statuscode = 403;
-        res.end("POST request not supported by /leaders/"+req.params.leaderId);
+        res.end("POST request not supported by /leaders/" + req.params.leaderId);
     })
     .put((req, res, next) => {
-        res.write("Updating the leader:"+ req.params.leaderId+" for you!");
-        res.end("Will add the faltu leader : " + req.body.name + " with details: " + req.body.description);
+        leaders.findByIdAndUpdate(req.params.leaderId, {
+            $set: req.body
+        }, {
+            new: true
+        })
+            .then((leader) => {
+                res.statuscode = 200;
+                res.setHeader('Content-Type', 'application/json');
+                res.json(leader);
+            }, (err) => next(err))
+            .catch((err) => next(err));
     })
     .delete((req, res, next) => {
-        res.end("Deleting the leader:"+ req.params.leaderId);
+        leaders.findByIdAndRemove(req.params.leaderId)
+            .then((resp) => {
+                res.statuscode = 200;
+                res.setHeader('Content-Type', 'application/json');
+                res.json(resp);
+            }, (err) => next(err))
+            .catch((err) => next(err));
     });
 
-    //Routes for the root path of the application
-    leaderRouter.route('/')
-    .all((req, res, next) => {
-        res.statuscode = 200;
-        res.setHeader('Content-Type', 'text/html');
-        next();
-    })
+//Routes for the root path of the application
+leaderRouter.route('/')
     .get((req, res, next) => {
-        res.end("Will get all the leaders to you!");
+        leaders.find({})
+            .then((leaders) => {
+                res.statuscode = 200;
+                res.setHeader('Content-Type', 'application/json');
+                res.json(leaders);
+            }, (err) => next(err))
+            .catch((err) => next(err));
     })
     .post((req, res, next) => {
-        res.end("Will add the faltu leader : " + req.body.name + " with details: " + req.body.description);
+        leaders.create(req.body)
+            .then((leaders) => {
+                console.log('leader Created', leaders);
+                res.statuscode = 200;
+                res.setHeader('Content-Type', 'application/json');
+                res.json(leaders);
+            }, (err) => next(err))
+            .catch((err) => next(err));
     })
     .put((req, res, next) => {
         res.statuscode = 403;
         res.end("PUT request not supported by /leaders");
     })
     .delete((req, res, next) => {
-        res.end("Deleting all the leaders");
+        leaders.remove({})
+            .then((resp) => {
+                res.statuscode = 200;
+                res.setHeader('Content-Type', 'application/json');
+                res.json(resp);
+            }, (err) => next(err))
+            .catch((err) => next(err));
     });
+
 
     module.exports = leaderRouter;

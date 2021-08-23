@@ -1,51 +1,85 @@
 var express = require('express');
 var bodyParser = require('body-parser');
+const mongoose = require('mongoose');
+
+const Promotions = require('../models/promotion');
 
 var promoRouter = express.Router({ mergeParams: true });
 
 promoRouter.use(bodyParser.json());
 
 //Routes for specific promo
+
 promoRouter.route('/:promoId')
-    .all((req, res, next) => {
-        res.statuscode = 200;
-        res.setHeader('Content-Type', 'text/html');
-        next();
-    })
     .get((req, res, next) => {
-        res.end("Will get the promotion: " + req.params.promoId + " to you!");
+        Promotions.findById(req.params.promoId)
+            .then((promotion) => {
+                res.statuscode = 200;
+                res.setHeader('Content-Type', 'application/json');
+                res.json(promotion);
+            }, (err) => next(err))
+            .catch((err) => next(err));
     })
     .post((req, res, next) => {
         res.statuscode = 403;
-        res.end("POST request not supported by /promotions/"+req.params.promoId);
+        res.end("POST request not supported by /Promotions/" + req.params.promoId);
     })
     .put((req, res, next) => {
-        res.write("Updating the promotion:"+ req.params.promoId+" for you!");
-        res.end("Will add the faltu promotion : " + req.body.name + " with details: " + req.body.description);
+        Promotions.findByIdAndUpdate(req.params.promoId, {
+            $set: req.body
+        }, {
+            new: true
+        })
+            .then((promotion) => {
+                res.statuscode = 200;
+                res.setHeader('Content-Type', 'application/json');
+                res.json(promotion);
+            }, (err) => next(err))
+            .catch((err) => next(err));
     })
     .delete((req, res, next) => {
-        res.end("Deleting the promotion:"+ req.params.promoId);
+        Promotions.findByIdAndRemove(req.params.promoId)
+            .then((resp) => {
+                res.statuscode = 200;
+                res.setHeader('Content-Type', 'application/json');
+                res.json(resp);
+            }, (err) => next(err))
+            .catch((err) => next(err));
     });
 
-    //Routes for the root path of the application
-    promoRouter.route('/')
-    .all((req, res, next) => {
-        res.statuscode = 200;
-        res.setHeader('Content-Type', 'text/html');
-        next();
-    })
+//Routes for the root path of the application
+promoRouter.route('/')
     .get((req, res, next) => {
-        res.end("Will get all the promotions to you!");
+        Promotions.find({})
+            .then((Promotions) => {
+                res.statuscode = 200;
+                res.setHeader('Content-Type', 'application/json');
+                res.json(Promotions);
+            }, (err) => next(err))
+            .catch((err) => next(err));
     })
     .post((req, res, next) => {
-        res.end("Will add the faltu promotion : " + req.body.name + " with details: " + req.body.description);
+        Promotions.create(req.body)
+            .then((Promotions) => {
+                console.log('promo Created', Promotions);
+                res.statuscode = 200;
+                res.setHeader('Content-Type', 'application/json');
+                res.json(Promotions);
+            }, (err) => next(err))
+            .catch((err) => next(err));
     })
     .put((req, res, next) => {
         res.statuscode = 403;
-        res.end("PUT request not supported by /promotions");
+        res.end("PUT request not supported by /Promotions");
     })
     .delete((req, res, next) => {
-        res.end("Deleting all the promotions");
+        Promotions.remove({})
+            .then((resp) => {
+                res.statuscode = 200;
+                res.setHeader('Content-Type', 'application/json');
+                res.json(resp);
+            }, (err) => next(err))
+            .catch((err) => next(err));
     });
 
     module.exports = promoRouter;

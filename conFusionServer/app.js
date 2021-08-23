@@ -11,6 +11,8 @@ var promoRouter = require('./routes/promoRouter');
 var leaderRouter = require('./routes/leaderRouter');
 const mongoose = require('mongoose');
 const Dishes = require('./models/dishes');
+const Promotions = require('./models/promotion');
+const leaders = require('./models/leader');
 
 const url ='mongodb://localhost:27017/confusion';
 
