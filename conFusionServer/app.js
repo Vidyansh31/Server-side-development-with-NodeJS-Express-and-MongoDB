@@ -31,37 +31,58 @@ app.set('view engine', 'jade');
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
+app.use(cookieParser('12345-67890-09876-54321'));
 
 function auth(req, res, next) {
-  console.log(req.headers);
+  console.log(req.signedCookies);
+  // check if the cookie is set or not
+  if(!req.signedCookies.user)
+  {
+    //If not Set then we need to get authentication
+    var authHeader = req.headers.authorization;
 
-  var authHeader = req.headers.authorization;
-
-  if(!authHeader) {
-    var err = new Error('You are not authenticated');
-
-    res.setHeader('WWW-Authenticate','Basic');
-    err.statuscode = 401;
-    return next(err);
+    if(!authHeader) {
+        var err = new Error('You are not authenticated');
     
+        res.setHeader('WWW-Authenticate','Basic');
+        err.statuscode = 401;
+        return next(err);
+        
+      }
+      var auth = new Buffer.from(authHeader.split(' ')[1],'base64').toString().split(':');
+      var username = auth[0];
+      var password = auth[1];
+    
+      if(username==="admin" && password==="password")
+      {
+        //Creating cookie 
+        res.cookie('user','admin',{signed:true});
+        next();//authorized
+      }
+      else
+      {
+        var err = new Error('You are not authorized');
+    
+        res.setHeader('WWW-Authenticate', 'Basic');
+        err.status = 401;
+        return next(err);
+      }
+     
   }
-   var auth = new Buffer.from(authHeader.split(' ')[1],'base64').toString().split(':');
-   var username = auth[0];
-   var password = auth[1];
-
-   if(username==="admin" && password==="password")
-   {
-     next();//authorized
-   }
-   else
-   {
-     var err = new Error('You are not authorized');
-
-     res.setHeader('WWW-Authenticate', 'Basic');
-     err.status = 401;
-     return next(err);
-   }
+  else{
+    if(req.signedCookies.user === 'admin')
+    {
+      next();
+    }
+    else{
+      var err = new Error('You are not authorized');
+    
+       
+        err.status = 401;
+        return next(err);
+    }
+  }
+  
 }
 
 app.use(auth);
