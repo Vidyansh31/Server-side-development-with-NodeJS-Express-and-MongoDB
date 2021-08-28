@@ -3,6 +3,9 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+// importing Session and Session file store
+var session = require('express-session');
+var FileStore = require('session-file-store')(session);
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -31,12 +34,21 @@ app.set('view engine', 'jade');
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser('12345-67890-09876-54321'));
+// app.use(cookieParser('12345-67890-09876-54321'));
+
+// using Session in app
+app.use(session({
+  name: 'session-id',
+  secret: '12345-67890-09876-54321',
+  saveUninitialized:false,
+  resave: false,
+  store : new FileStore()
+}));
 
 function auth(req, res, next) {
-  console.log(req.signedCookies);
-  // check if the cookie is set or not
-  if(!req.signedCookies.user)
+  console.log(req.session);
+  // check if the session is set or not
+  if(!req.session.user)
   {
     //If not Set then we need to get authentication
     var authHeader = req.headers.authorization;
@@ -55,8 +67,8 @@ function auth(req, res, next) {
     
       if(username==="admin" && password==="password")
       {
-        //Creating cookie 
-        res.cookie('user','admin',{signed:true});
+        //Creating a Session
+        req.session.user = "admin";
         next();//authorized
       }
       else
@@ -70,8 +82,9 @@ function auth(req, res, next) {
      
   }
   else{
-    if(req.signedCookies.user === 'admin')
+    if(req.session.user === 'admin')
     {
+      console.log('req.session: ',req.session);
       next();
     }
     else{
