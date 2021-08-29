@@ -1,6 +1,7 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+var authenticate = require('../authenticate')
 
 const Dishes = require('../models/dishes');
 
@@ -21,11 +22,11 @@ dishRouter.route('/:dishId')
             }, (err) => next(err))
             .catch((err) => next(err));
     })
-    .post((req, res, next) => {
+    .post(authenticate.verifyUser, (req, res, next) => {
         res.statuscode = 403;
         res.end("POST request not supported by /dishes/" + req.params.dishId);
     })
-    .put((req, res, next) => {
+    .put(authenticate.verifyUser, (req, res, next) => {
         Dishes.findByIdAndUpdate(req.params.dishId, {
             $set: req.body
         }, {
@@ -38,7 +39,7 @@ dishRouter.route('/:dishId')
             }, (err) => next(err))
             .catch((err) => next(err));
     })
-    .delete((req, res, next) => {
+    .delete(authenticate.verifyUser, (req, res, next) => {
         Dishes.findByIdAndRemove(req.params.dishId)
             .then((resp) => {
                 res.statuscode = 200;
@@ -59,7 +60,7 @@ dishRouter.route('/')
             }, (err) => next(err))
             .catch((err) => next(err));
     })
-    .post((req, res, next) => {
+    .post(authenticate.verifyUser, (req, res, next) => {
         Dishes.create(req.body)
             .then((dishes) => {
                 console.log('Dish Created', dishes);
@@ -69,11 +70,11 @@ dishRouter.route('/')
             }, (err) => next(err))
             .catch((err) => next(err));
     })
-    .put((req, res, next) => {
+    .put(authenticate.verifyUser, (req, res, next) => {
         res.statuscode = 403;
         res.end("PUT request not supported by /dishes");
     })
-    .delete((req, res, next) => {
+    .delete(authenticate.verifyUser, (req, res, next) => {
         Dishes.remove({})
             .then((resp) => {
                 res.statuscode = 200;
@@ -83,7 +84,7 @@ dishRouter.route('/')
             .catch((err) => next(err));
     });
 
-    dishRouter.route('/:dishId/comments/:commentId')
+dishRouter.route('/:dishId/comments/:commentId')
     .get((req, res, next) => {
         Dishes.findById(req.params.dishId)
             .then((dish) => {
@@ -105,12 +106,12 @@ dishRouter.route('/')
             }, (err) => next(err))
             .catch((err) => next(err));
     })
-    .post((req, res, next) => {
+    .post(authenticate.verifyUser, (req, res, next) => {
         res.statusCode = 403;
         res.end('POST operation not supported on /dishes/' + req.params.dishId
             + '/comments/' + req.params.commentId);
     })
-    .put((req, res, next) => {
+    .put(authenticate.verifyUser, (req, res, next) => {
         Dishes.findById(req.params.dishId)
             .then((dish) => {
                 if (dish != null && dish.comments.id(req.params.commentId) != null) {
@@ -134,7 +135,7 @@ dishRouter.route('/')
             }, (err) => next(err))
             .catch((err) => next(err));
     })
-    .delete((req, res, next) => {
+    .delete(authenticate.verifyUser, (req, res, next) => {
         Dishes.findById(req.params.dishId)
             .then((dish) => {
                 if (dish != null && dish.comments.id(req.params.commentId) != null) {
@@ -172,7 +173,7 @@ dishRouter.route('/:dishId/comments')
             }, (err) => next(err))
             .catch((err) => next(err));
     })
-    .post((req, res, next) => {
+    .post(authenticate.verifyUser, (req, res, next) => {
         Dishes.findById(req.params.dishId)
             .then((dish) => {
                 if (dish != null) {
@@ -193,12 +194,12 @@ dishRouter.route('/:dishId/comments')
             .catch((err) => next(err));
 
     })
-    .put((req, res, next) => {
+    .put(authenticate.verifyUser, (req, res, next) => {
         res.statusCode = 403;
         res.end('PUT operation not supported on /dishes/'
             + req.params.dishId + '/comments');
     })
-    .delete((req, res, next) => {
+    .delete(authenticate.verifyUser, (req, res, next) => {
         Dishes.findById(req.params.dishId)
             .then((dish) => {
                 if (dish != null) {

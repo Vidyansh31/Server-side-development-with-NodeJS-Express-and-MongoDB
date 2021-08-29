@@ -1,6 +1,7 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+var authenticate = require('../authenticate');
 
 const leaders = require('../models/leader');
 
@@ -19,11 +20,11 @@ leaderRouter.route('/:leaderId')
             }, (err) => next(err))
             .catch((err) => next(err));
     })
-    .post((req, res, next) => {
+    .post(authenticate.verifyUser, (req, res, next) => {
         res.statuscode = 403;
         res.end("POST request not supported by /leaders/" + req.params.leaderId);
     })
-    .put((req, res, next) => {
+    .put(authenticate.verifyUser, (req, res, next) => {
         leaders.findByIdAndUpdate(req.params.leaderId, {
             $set: req.body
         }, {
@@ -36,7 +37,7 @@ leaderRouter.route('/:leaderId')
             }, (err) => next(err))
             .catch((err) => next(err));
     })
-    .delete((req, res, next) => {
+    .delete(authenticate.verifyUser, (req, res, next) => {
         leaders.findByIdAndRemove(req.params.leaderId)
             .then((resp) => {
                 res.statuscode = 200;
@@ -57,7 +58,7 @@ leaderRouter.route('/')
             }, (err) => next(err))
             .catch((err) => next(err));
     })
-    .post((req, res, next) => {
+    .post(authenticate.verifyUser, (req, res, next) => {
         leaders.create(req.body)
             .then((leaders) => {
                 console.log('leader Created', leaders);
@@ -67,11 +68,11 @@ leaderRouter.route('/')
             }, (err) => next(err))
             .catch((err) => next(err));
     })
-    .put((req, res, next) => {
+    .put(authenticate.verifyUser, (req, res, next) => {
         res.statuscode = 403;
         res.end("PUT request not supported by /leaders");
     })
-    .delete((req, res, next) => {
+    .delete(authenticate.verifyUser, (req, res, next) => {
         leaders.remove({})
             .then((resp) => {
                 res.statuscode = 200;
@@ -82,4 +83,4 @@ leaderRouter.route('/')
     });
 
 
-    module.exports = leaderRouter;
+module.exports = leaderRouter;
